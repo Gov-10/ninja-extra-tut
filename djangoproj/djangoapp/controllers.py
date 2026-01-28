@@ -4,8 +4,9 @@ from .services import StudentService
 from .schema import StudentOut, StudentIn
 from typing import List
 from ninja_extra import NinjaExtraAPI
-from django.db import connections
+from django.db import connections,connection
 from django.db.utils import OperationalError
+from django.db.migrations.executor import MigrationExecutor
 
 @api_controller("/students", tags=["Student"])
 class StudentController:
@@ -42,6 +43,16 @@ class HealthController:
                 return {"status": "DB is up"}
         except OperationalError:
             return {"status": "DB is down"}
+    
+    @http_get("/live")
+    def live_check(self):
+        return {"status": "running"}
+
+    @http_get("/migration")
+    def migration_check(self):
+        executor = MigrationExecutor(connection)
+        return executor.migration_plan(executor.loader.graph.leaf_nodes())==[]
+
 
 
 
