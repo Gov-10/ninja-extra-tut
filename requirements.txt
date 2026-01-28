@@ -1,0 +1,5 @@
+django
+django-ninja
+django-ninja-extra
+pytest
+pytest-django
