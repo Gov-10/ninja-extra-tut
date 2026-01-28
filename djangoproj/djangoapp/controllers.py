@@ -4,6 +4,8 @@ from .services import StudentService
 from .schema import StudentOut, StudentIn
 from typing import List
 from ninja_extra import NinjaExtraAPI
+from django.db import connections
+from django.db.utils import OperationalError
 
 @api_controller("/students", tags=["Student"])
 class StudentController:
@@ -29,7 +31,20 @@ class StudentController:
     def delete_stud(self, student_id:int):
         return self.service.delete(student_id)
 
+@api_controller("/health", tags=["Health"])
+class HealthController:
+    @http_get("/")
+    def health_check(self):
+        db_conn = connections["default"]
+        try:
+            with db_conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                return {"status": "DB is up"}
+        except OperationalError:
+            return {"status": "DB is down"}
+
+
 
 api=NinjaExtraAPI()
-api.register_controllers(StudentController)
+api.register_controllers(StudentController,HealthController)
         
